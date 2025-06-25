@@ -78,24 +78,13 @@ alias g="git"
 alias gcl="git clone"
 alias ga="git add"
 alias gaa="git add ."
-alias gau="git add -u"
 alias gc="git commit -m"
 alias gp="git push"
-alias gpf="git push -f"
 alias gpo='git push origin $(git_current_branch)'
 alias gpp='git push --set-upstream origin $(git_current_branch)'
 
-alias gg='git gui'
-alias glog='git log --oneline --all --graph --decorate'
-
 alias gf="git fetch"
-alias gl="git pull"
-
-alias grb="git rebase"
-alias grbm="git rebase master"
-alias grbc="git rebase --continue"
-alias grbs="git rebase --skip"
-alias grba="git rebase --abort"
+alias gpl="git pull"
 
 alias gd="git diff"
 alias gdt="git difftool"
@@ -105,8 +94,7 @@ alias gco="git checkout"
 alias gcb="git checkout -b"
 alias gcm="git checkout master"
 
-alias grhead="git reset HEAD^"
-alias grhard="git fetch origin && git reset --hard"
+alias grsh="git reset HEAD^"
 
 alias gst="git stash"
 alias gstp="git stash pop"
@@ -170,8 +158,6 @@ chx () {
 #-------------------------------------------------------------
 alias sv="source .venv/bin/activate"
 alias de="deactivate"
-alias ma="micromamba activate"
-alias md="micromamba deactivate"
 
 # -------------------------------------------------------------------
 # Slurm
