@@ -131,3 +131,15 @@ if [ $extras == true ]; then
         NO_ASK_OPENAI_API_KEY=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/hmirin/ask.sh/main/install.sh)"
     fi
 fi
+
+if ! command -v node >/dev/null 2>&1; then
+    echo "Installing Node.js..."
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+    apt install -y nodejs
+fi
+
+# Install Claude Code - will go to /usr/bin/claude-code
+if ! command -v claude-code >/dev/null 2>&1; then
+    echo "Installing Claude Code..."
+    npm install -g @anthropic-ai/claude-code
+fi

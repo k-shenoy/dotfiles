@@ -15,7 +15,6 @@ plugins=(zsh-autosuggestions zsh-syntax-highlighting zsh-completions zsh-history
 
 source $ZSH/oh-my-zsh.sh
 source $CONFIG_DIR/aliases.sh
-source $CONFIG_DIR/p10k.zsh
 source $CONFIG_DIR/extras.sh
 source $CONFIG_DIR/key_bindings.sh
 add_to_path "${DOT_DIR}/custom_bins"
