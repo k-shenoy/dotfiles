@@ -23,6 +23,8 @@ alias mkdir='mkdir -p'
 
 # find/read files
 alias h='head'
+alias hc='head -c'
+alias hc1='head -c 1000'
 alias t='tail'
 # alias rl="readlink -f"
 alias fd='find . -type d -name'

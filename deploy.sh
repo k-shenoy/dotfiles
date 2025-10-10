@@ -51,6 +51,13 @@ if [ -n "${ALIASES+x}" ]; then
     done
 fi
 
+# Bin setup - symlink scripts
+mkdir -p $HOME/bin
+for script in $DOT_DIR/bin/*; do
+    ln -sf $script $HOME/bin/$(basename $script)
+    echo "linked $(basename $script) to ~/bin/"
+done
+
 echo "changing default shell to zsh"
 chsh -s $(which zsh)
 

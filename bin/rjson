@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+import json, sys
+
+count  = int(sys.argv[1]) if len(sys.argv) > 2 else 1
+short  = sys.argv[2] == 's'
+file   = sys.argv[-1]
+
+# NEW: recursive string-truncator
+def _shorten(o):
+    if isinstance(o, str):
+        return o[:100] + ('...' if len(o) > 100 else '')
+    if isinstance(o, list):
+        return [_shorten(x) for x in o]
+    if isinstance(o, dict):
+        return {k: _shorten(v) for k, v in o.items()}
+    return o                                   # numbers / bool / None
+
+with open(file) as f:
+    if file.endswith('.jsonl'):
+        for i, line in enumerate(f):
+            if i >= count: break
+            obj = json.loads(line.strip())
+            if short: obj = _shorten(obj)      # << apply truncation
+            print(json.dumps(obj, indent=2))
+    else:
+        data = json.load(f)
+        if isinstance(data, list):
+            items = data[:count]
+            if short: items = [_shorten(x) for x in items]
+            for item in items:
+                print(json.dumps(item, indent=2))
+        else:
+            if short: data = _shorten(data)
+            print(json.dumps(data, indent=2))
