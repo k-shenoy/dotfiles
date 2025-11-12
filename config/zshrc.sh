@@ -58,3 +58,57 @@ fi
 cat $CONFIG_DIR/start.txt
 
 export PATH="$HOME/bin:$PATH"
+
+# mkipynb /path/to/file.json  ->  /path/to/file.ipynb
+mkipynb() {
+  local src="$1"
+  if [[ -z "$src" ]]; then
+    echo "usage: mkipynb <path/to/file>"; return 1
+  fi
+  if [[ ! -e "$src" ]]; then
+    echo "mkipynb: no such file: $src"; return 1
+  fi
+
+  # sanitize any accidental newlines/CRs from pasted paths
+  src="${src//$'\n'/}"
+  src="${src//$'\r'/}"
+
+  /usr/bin/env python3 - "$src" <<'PY'
+import json, sys, pathlib
+
+src = pathlib.Path(sys.argv[1]).expanduser().resolve()
+nb_path = src.with_suffix(".ipynb")
+
+# Default code with safe quoting of the path
+path_literal = json.dumps(src.as_posix())
+cell_code = [
+    "from src.utils.utils import load_json\n",
+    f"k = load_json({path_literal})\n",
+    "print(len(k))\n",
+]
+
+nb_json = {
+    "cells": [{
+        "cell_type": "code",
+        "metadata": {},
+        "source": cell_code,
+        "execution_count": None,
+        "outputs": []
+    }],
+    "metadata": {
+        "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
+        "language_info": {"name": "python"}
+    },
+    "nbformat": 4,
+    "nbformat_minor": 5
+}
+
+if nb_path.exists():
+    print(str(nb_path))  # don't overwrite; still print the path
+    sys.exit(2)
+
+nb_path.write_text(json.dumps(nb_json, ensure_ascii=False, indent=1), encoding="utf-8")
+print(str(nb_path))
+PY
+}
+
