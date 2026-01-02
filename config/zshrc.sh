@@ -1,3 +1,4 @@
+# At the very top of the file
 CONFIG_DIR=$(dirname $(realpath ${(%):-%x}))
 DOT_DIR=$CONFIG_DIR/..
 
@@ -58,3 +59,67 @@ fi
 cat $CONFIG_DIR/start.txt
 
 export PATH="$HOME/bin:$PATH"
+
+# Add these to /workspace-vast/keshavs/dotfiles/config/zshrc.sh
+
+# Cluster-specific environment variables
+export HF_HOME=/workspace-vast/pretrained_ckpts
+export UV_PYTHON_INSTALL_DIR=/workspace-vast/$(whoami)/.uv/python
+export UV_CACHE_DIR=/workspace-vast/$(whoami)/.cache/uv
+
+# Interactive sessions
+alias sint="srun -p dev,overflow --qos=dev --cpus-per-task=8 --gres=gpu:1 --mem=32G --job-name=D_${USER} --pty zsh"
+alias sint2="srun -p dev,overflow --qos=dev --cpus-per-task=16 --gres=gpu:2 --mem=64G --job-name=D_${USER} --pty zsh"
+alias sint4="srun -p dev,overflow --qos=dev --cpus-per-task=32 --gres=gpu:4 --mem=128G --job-name=D_${USER} --pty zsh"
+
+# Queue monitoring
+alias sq="squeue -u ${USER}"
+alias sqa="squeue"
+alias sqw="watch -n 2 squeue -u ${USER}"
+alias sacct-today="sacct -u ${USER} --starttime=today --format=JobID,JobName,Partition,QOS,Elapsed,State,ExitCode"
+
+# Job details
+alias sjob="scontrol show job"
+
+# Cancel jobs
+alias sc="scancel"
+alias scall="scancel -u ${USER}"
+
+# Activate your main environment
+alias activate-prop="source /workspace-vast/${USER}/git/propensity-awareness/.venv/bin/activate"
+
+# Quick navigation
+alias cdprop="cd /workspace-vast/${USER}/git/propensity-awareness"
+alias cdvast="cd /workspace-vast/${USER}"
+
+# GPU monitoring
+alias gpuwatch="watch -n 1 nvidia-smi"
+
+# Job log viewing
+alias tailj='_tailj(){ tail -f logs/*_$1.out; }; _tailj'
+alias catj='_catj(){ cat logs/*_$1.out; }; _catj'
+alias lslogs='ls -lht logs/ | head -20'
+alias lastlog='ls -t logs/*.out | head -1 | xargs tail -f'  # Tail most recent log
+
+# Propensity-awareness queue scripts
+PA_SCRIPTS=/workspace-vast/keshavs/git/propensity-awareness/src/static_bash_scripts
+rq() { $PA_SCRIPTS/run_queue.sh "$@"; }
+sj() { $PA_SCRIPTS/submit_job.sh "$@"; }
+sjrq() { $PA_SCRIPTS/submit_job.sh $PA_SCRIPTS/run_queue.sh "$@"; }
+
+stick-title() {
+    export TMUX_PANE_TITLE="$*"
+    tmux select-pane -T "$*"
+}
+
+unstick-title() {
+    unset TMUX_PANE_TITLE
+}
+
+# Hook that runs after oh-my-zsh's
+add-zsh-hook precmd _restore_pane_title
+_restore_pane_title() {
+    if [[ -n "$TMUX_PANE_TITLE" ]]; then
+        tmux select-pane -T "$TMUX_PANE_TITLE"
+    fi
+}
