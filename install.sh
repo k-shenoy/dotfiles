@@ -48,7 +48,8 @@ esac
 # Installing on linux with apt
 if [ $machine == "Linux" ]; then
     DOT_DIR=$(dirname $(realpath $0))
-    sudo apt-get update -y
+    apt-get update -y
+    apt-get install -y sudo
     [ $zsh == true ] && sudo apt-get install -y zsh
     [ $tmux == true ] && sudo apt-get install -y tmux
     sudo apt-get install -y less nano htop ncdu nvtop lsof rsync jq
