@@ -1,0 +1,12 @@
+#!/bin/bash
+set -euo pipefail
+POD_ID="${1:?Usage: rnp-ssh <pod_id>}"
+source /workspace/exploration_hacking/.env
+INFO=$(curl -s "https://rest.runpod.io/v1/pods/$POD_ID" -H "Authorization: Bearer $RUNPOD_API_KEY") || {
+    echo "ERROR: API request failed"; exit 1
+}
+IP=$(echo "$INFO" | jq -r '.publicIp // empty')
+PORT=$(echo "$INFO" | jq -r '.portMappings["22"] // empty')
+[[ -z "$IP" || -z "$PORT" ]] && { echo "ERROR: pod not running or no SSH port. API response: $INFO"; exit 1; }
+echo "Connecting to $IP:$PORT..."
+exec ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -p "$PORT" "root@$IP"

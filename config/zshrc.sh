@@ -62,11 +62,6 @@ export PATH="$HOME/bin:$PATH"
 
 # Add these to /workspace-vast/keshavs/dotfiles/config/zshrc.sh
 
-# Cluster-specific environment variables
-export HF_HOME=/workspace-vast/pretrained_ckpts
-export UV_PYTHON_INSTALL_DIR=/workspace-vast/$(whoami)/.uv/python
-export UV_CACHE_DIR=/workspace-vast/$(whoami)/.cache/uv
-
 # Interactive sessions
 alias sint="srun -p dev,overflow --qos=dev --cpus-per-task=8 --gres=gpu:1 --mem=32G --job-name=D_${USER} --pty zsh"
 alias sint2="srun -p dev,overflow --qos=dev --cpus-per-task=16 --gres=gpu:2 --mem=64G --job-name=D_${USER} --pty zsh"
@@ -85,13 +80,6 @@ alias sjob="scontrol show job"
 alias sc="scancel"
 alias scall="scancel -u ${USER}"
 
-# Activate your main environment
-alias activate-prop="source /workspace-vast/${USER}/git/propensity-awareness/.venv/bin/activate"
-
-# Quick navigation
-alias cdprop="cd /workspace-vast/${USER}/git/propensity-awareness"
-alias cdvast="cd /workspace-vast/${USER}"
-
 # GPU monitoring
 alias gpuwatch="watch -n 1 nvidia-smi"
 
@@ -102,10 +90,8 @@ alias lslogs='ls -lht logs/ | head -20'
 alias lastlog='ls -t logs/*.out | head -1 | xargs tail -f'  # Tail most recent log
 
 # Propensity-awareness queue scripts
-PA_SCRIPTS=/workspace-vast/keshavs/git/propensity-awareness/src/static_bash_scripts
+PA_SCRIPTS=/workspace/exploration_hacking/src/static_bash_scripts
 rq() { $PA_SCRIPTS/run_queue.sh "$@"; }
-sj() { $PA_SCRIPTS/submit_job.sh "$@"; }
-sjrq() { $PA_SCRIPTS/submit_job.sh $PA_SCRIPTS/run_queue.sh "$@"; }
 
 stick-title() {
     export TMUX_PANE_TITLE="$*"

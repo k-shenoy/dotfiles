@@ -100,3 +100,43 @@ extract () {
        echo "'$1' is not a valid file!"
    fi
  }
+
+#-------------------------------------------------------------
+# Audit logger — bash command logging
+#-------------------------------------------------------------
+_AL_CMD_LOG_DIR=""
+_AL_SESSION_ID=""
+
+_al_preexec() {
+    [[ -z "$_AL_CMD_LOG_DIR" ]] && return
+    local ts="$(date -Iseconds)"
+    local cwd="$(pwd)"
+    echo "[${ts}] [${_AL_SESSION_ID}] (${cwd}) $1" >> "${_AL_CMD_LOG_DIR}/commands.log"
+    printf '{"ts":"%s","session":"%s","cwd":"%s","command":"%s"}\n' "$ts" "$_AL_SESSION_ID" "$cwd" "$(echo "$1" | sed 's/"/\\"/g')" >> "${_AL_CMD_LOG_DIR}/commands.jsonl"
+}
+
+start_cmd_log() {
+    local project_dir="${1:?Usage: start_cmd_log /path/to/project}"
+    project_dir="$(realpath "$project_dir")"
+    _AL_CMD_LOG_DIR="${project_dir}/.audit"
+    _AL_SESSION_ID="$$_$(head -c4 /dev/urandom | xxd -p)"
+    mkdir -p "$_AL_CMD_LOG_DIR"
+    autoload -Uz add-zsh-hook
+    add-zsh-hook preexec _al_preexec
+    echo "[*] Command logging started (session ${_AL_SESSION_ID}) → ${_AL_CMD_LOG_DIR}/commands.log"
+}
+
+stop_cmd_log() {
+    if [[ -n "$_AL_CMD_LOG_DIR" ]]; then
+        add-zsh-hook -d preexec _al_preexec
+        echo "[*] Command logging stopped (was logging to ${_AL_CMD_LOG_DIR})"
+        _AL_CMD_LOG_DIR=""
+    else
+        echo "[*] Command logging is not active"
+    fi
+}
+
+# Auto-start command logging if tmux session has AL_PROJECT_DIR set
+if [[ -n "${AL_PROJECT_DIR:-}" ]]; then
+    start_cmd_log "$AL_PROJECT_DIR"
+fi

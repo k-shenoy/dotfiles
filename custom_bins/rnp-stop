@@ -1,0 +1,41 @@
+#!/bin/bash
+set -euo pipefail
+POD_ID="${1:?Usage: rnp-stop <pod_id>}"
+source /workspace/exploration_hacking/.env
+
+curl -sf -X DELETE "https://rest.runpod.io/v1/pods/$POD_ID" \
+    -H "Authorization: Bearer $RUNPOD_API_KEY" | jq -r '.desiredStatus'
+
+# ── Update compute log with end time ─────────────────────────────────────────
+LOG_FILE="/workspace/exploration_hacking/compute_log/log.jsonl"
+if [[ ! -f "$LOG_FILE" ]]; then
+    echo "WARNING: No compute log found at $LOG_FILE — compute time not tracked for this pod."
+    exit 0
+fi
+
+END_EPOCH=$(date -u +%s)
+END_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S")
+TEMP=$(mktemp)
+FOUND=false
+
+while IFS= read -r line; do
+    pid=$(echo "$line" | jq -r '.pod_id')
+    et=$(echo "$line" | jq -r '.end_time')
+    if [[ "$pid" == "$POD_ID" && -z "$et" && "$FOUND" == false ]]; then
+        start=$(echo "$line" | jq -r '.start_time')
+        start_epoch=$(date -u -d "$start" +%s)
+        duration=$(( (END_EPOCH - start_epoch) / 60 ))
+        echo "$line" | jq -c --arg et "$END_TIME" --argjson dur "$duration" \
+            '.end_time = $et | .duration_mins = $dur' >> "$TEMP"
+        FOUND=true
+        echo "Compute log updated: pod $POD_ID ran for ${duration}min."
+    else
+        echo "$line" >> "$TEMP"
+    fi
+done < "$LOG_FILE"
+
+mv "$TEMP" "$LOG_FILE"
+
+if [[ "$FOUND" == false ]]; then
+    echo "WARNING: No open log entry found for pod $POD_ID — compute time not tracked for this pod."
+fi

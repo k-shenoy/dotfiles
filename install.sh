@@ -50,7 +50,7 @@ if [ $machine == "Linux" ]; then
     DOT_DIR=$(dirname $(realpath $0))
     apt-get update -y
     apt-get install -y sudo
-    [ $zsh == true ] && sudo apt-get install -y zsh
+    [ $zsh == true ] && sudo apt-get install -y zsh && chsh -s $(which zsh)
     [ $tmux == true ] && sudo apt-get install -y tmux
     sudo apt-get install -y less nano htop ncdu nvtop lsof rsync jq
     curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -85,7 +85,7 @@ elif [ $machine == "Mac" ]; then
     fi
 
     DOT_DIR=$(dirname $(realpath $0))
-    [ $zsh == true ] && yes | brew install zsh
+    [ $zsh == true ] && yes | brew install zsh && chsh -s $(which zsh)
     [ $tmux == true ] && yes | brew install tmux
     defaults write -g InitialKeyRepeat -int 10 # normal minimum is 15 (225 ms)
     defaults write -g KeyRepeat -int 1 # normal minimum is 2 (30 ms)

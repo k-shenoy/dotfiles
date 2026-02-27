@@ -1,0 +1,2 @@
+#!/bin/bash
+bash /workspace/exploration_hacking/src/static_bash_scripts/run_on_new_pod.sh "$@"
