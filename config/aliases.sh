@@ -113,9 +113,12 @@ alias gpsup='git push --set-upstream origin $(git_current_branch)'
 
 alias ta="tmux attach"
 alias taa="tmux attach -t"
+alias tmat="tmux attach -t"
+alias tmatl2="tmux -L two attach -t"
 alias tad="tmux attach -d -t"
 alias td="tmux detach"
 alias ts="tmux new-session -s"
+alias tsl2="tmux -L two new-session -s"
 alias tl="tmux list-sessions"
 alias tkill="tmux kill-server"
 alias tdel="tmux kill-session -t"

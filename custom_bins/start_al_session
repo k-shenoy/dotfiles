@@ -1,12 +1,17 @@
 #!/bin/bash
 # Start a tmux session with audit command logging on all panes
-# Usage: start_al_session /path/to/project [session_name]
+# Usage: start_al_session /path/to/project [session_name] [tmux_socket]
 set -euo pipefail
 
-PROJECT_DIR="${1:?Usage: start_al_session /path/to/project [session_name]}"
+PROJECT_DIR="${1:?Usage: start_al_session /path/to/project [session_name] [tmux_socket]}"
 PROJECT_DIR="$(realpath "$PROJECT_DIR")"
 SESSION_NAME="${2:-audit}"
-
+TMUX_SOCKET="${3:-}"
+TMUX_CMD=(tmux)
+if [[ -n "$TMUX_SOCKET" ]]; then
+    TMUX_CMD=(tmux -L "$TMUX_SOCKET")
+fi
+GITIGNORE_PATH=".gitignore_logger"
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 AL_SCRIPT="${SCRIPT_DIR}/../../exploration_hacking/src/static_bash_scripts/audit_logger.sh"
 if [[ ! -f "$AL_SCRIPT" ]]; then
@@ -14,16 +19,28 @@ if [[ ! -f "$AL_SCRIPT" ]]; then
     exit 1
 fi
 
-if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
+AUDIT_DIR="${PROJECT_DIR}/.audit"
+TERMINAL_LOG_DIR="${AUDIT_DIR}/terminal_logs"
+
+if "${TMUX_CMD[@]}" has-session -t "$SESSION_NAME" 2>/dev/null; then
     echo "[*] Session '${SESSION_NAME}' exists, setting AL_PROJECT_DIR and attaching"
-    tmux set-environment -t "$SESSION_NAME" AL_PROJECT_DIR "$PROJECT_DIR"
-    tmux attach -t "$SESSION_NAME"
+    "${TMUX_CMD[@]}" set-environment -t "$SESSION_NAME" AL_PROJECT_DIR "$PROJECT_DIR"
+    mkdir -p "$TERMINAL_LOG_DIR"
+    "${TMUX_CMD[@]}" set-option -t "$SESSION_NAME" default-command \
+        "script -q -f ${TERMINAL_LOG_DIR}/pane_\$(date +%Y%m%d_%H%M%S)_\$\$.log /bin/zsh"
+    "${TMUX_CMD[@]}" attach -t "$SESSION_NAME"
 else
-    tmux new-session -d -s "$SESSION_NAME"
-    tmux set-environment -t "$SESSION_NAME" AL_PROJECT_DIR "$PROJECT_DIR"
-    # First pane: file watcher (foreground)
-    tmux send-keys -t "$SESSION_NAME" "$AL_SCRIPT $PROJECT_DIR" Enter
+    mkdir -p "$TERMINAL_LOG_DIR"
+    "${TMUX_CMD[@]}" new-session -d -s "$SESSION_NAME"
+    "${TMUX_CMD[@]}" set-environment -t "$SESSION_NAME" AL_PROJECT_DIR "$PROJECT_DIR"
+    # Every new pane/window in this session auto-launches inside `script`
+    # so all terminal output is captured, even for panes created later
+    "${TMUX_CMD[@]}" set-option -t "$SESSION_NAME" default-command \
+        "script -q -f ${TERMINAL_LOG_DIR}/pane_\$(date +%Y%m%d_%H%M%S)_\$\$.log /bin/zsh"
+    # First pane: file watcher (foreground) — launched via send-keys so it
+    # runs inside the script-wrapped shell and its output is also captured
+    "${TMUX_CMD[@]}" send-keys -t "$SESSION_NAME" "$AL_SCRIPT $PROJECT_DIR $GITIGNORE_PATH" Enter
     # Second pane: working shell (auto-starts command logging via AL_PROJECT_DIR)
-    tmux split-window -v -t "$SESSION_NAME"
-    tmux attach -t "$SESSION_NAME"
+    "${TMUX_CMD[@]}" split-window -v -t "$SESSION_NAME"
+    "${TMUX_CMD[@]}" attach -t "$SESSION_NAME"
 fi
