@@ -24,3 +24,6 @@ cd ..
 
 # 4) Setup github
 echo ./scripts/setup_github.sh "keshavsy@gmail.com" "Keshav Shenoy"
+
+# 5) Tailscale + mosh (needs TS_AUTHKEY or /workspace/.secrets/tailscale_authkey on first join)
+./runpod/tailscale_bootstrap.sh

@@ -11,6 +11,10 @@ fi
 source .venv/bin/activate
 python -c "from huggingface_hub.hf_api import HfFolder; import os; HfFolder.save_token(os.environ['HF_TOKEN'])"
 
+# Join tailnet + install mosh; restores persisted SSH host keys from /workspace,
+# so it must run before sshd starts. Non-fatal so the pod still boots without it.
+bash "$(dirname "$0")/tailscale_bootstrap.sh" || echo "WARNING: tailscale bootstrap failed" >&2
+
 # Generate SSH host keys
 ssh-keygen -A
 # Start SSH service
