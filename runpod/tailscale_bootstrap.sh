@@ -20,6 +20,13 @@ TS_HOSTNAME="${TS_HOSTNAME:-runpod-dev}"
 command -v tailscale >/dev/null || curl -fsSL https://tailscale.com/install.sh | sh
 command -v mosh-server >/dev/null || (apt-get update && apt-get install -y mosh)
 
+# mosh-server inherits the client's LANG (typically en_US.UTF-8 from a Mac)
+# and refuses to start if that locale isn't generated on the server
+if ! locale -a 2>/dev/null | grep -qi 'en_US.utf'; then
+    apt-get install -y locales
+    locale-gen en_US.UTF-8
+fi
+
 # 2) Persist SSH host keys on /workspace so the Tailscale IP's host identity
 #    survives pod recreation (avoids known_hosts warnings on the client).
 mkdir -p /workspace/.ssh_host_keys
