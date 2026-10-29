@@ -8,6 +8,7 @@ USAGE=$(cat <<-END
         --tmux       install tmux
         --zsh        install zsh
         --extras     install extra dependencies
+        --tailscale  (linux/runpod) join tailnet + install mosh via runpod/tailscale_bootstrap.sh
 
     If OPTIONS are passed they will be installed
     with apt if on linux or brew if on OSX
@@ -17,6 +18,7 @@ END
 zsh=false
 tmux=false
 extras=false
+tailscale=false
 force=false
 while (( "$#" )); do
     case "$1" in
@@ -28,6 +30,8 @@ while (( "$#" )); do
             tmux=true && shift ;;
         --extras)
             extras=true && shift ;;
+        --tailscale)
+            tailscale=true && shift ;;
         --force)
             force=true && shift ;;
         --) # end argument parsing
@@ -147,4 +151,9 @@ fi
 if ! command -v codex >/dev/null 2>&1; then
     echo "Installing Codex..."
     npm install -g @openai/codex
+fi
+
+if [ $tailscale == true ]; then
+    [ $machine == "Linux" ] || { echo "Error: --tailscale is linux-only" >&2; exit 1; }
+    bash "$DOT_DIR/runpod/tailscale_bootstrap.sh"
 fi

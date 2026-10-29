@@ -13,6 +13,8 @@ Installation on a mac machine requires homebrew so install this [from here](http
 ./install.sh --tmux --zsh
 ```
 
+On a RunPod pod, add `--tailscale` to join the tailnet and install mosh (see [runpod/tailscale_bootstrap.sh](./runpod/tailscale_bootstrap.sh)). Tailscale state lives on `/workspace`, so after the first join re-running it on a restarted pod reconnects without an auth key. Connect with `mosh root@runpod-dev`.
+
 ### Step 2
 Deploy (e.g. source aliases for .zshrc, apply oh-my-zsh settings etc..)
 ```bash
