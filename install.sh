@@ -52,8 +52,9 @@ if [ $machine == "Linux" ]; then
     apt-get install -y sudo
     [ $zsh == true ] && sudo apt-get install -y zsh && chsh -s $(which zsh)
     [ $tmux == true ] && sudo apt-get install -y tmux
-    sudo apt-get install -y less nano htop ncdu nvtop lsof rsync jq
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+    sudo apt-get install -y less nano htop ncdu nvtop lsof rsync jq unzip
+    command -v uv >/dev/null 2>&1 || curl -LsSf https://astral.sh/uv/install.sh | sh
+    command -v rclone >/dev/null 2>&1 || curl -fsSL https://rclone.org/install.sh | sudo bash
     
     if [ $extras == true ]; then
         sudo apt-get install -y ripgrep
@@ -72,7 +73,7 @@ if [ $machine == "Linux" ]; then
 
 # Installing on mac with homebrew
 elif [ $machine == "Mac" ]; then
-    yes | brew install coreutils ncdu htop ncdu rsync btop jq  # Mac won't have realpath before coreutils installed
+    yes | brew install coreutils ncdu htop ncdu rsync btop jq rclone  # Mac won't have realpath before coreutils installed
     curl -LsSf https://astral.sh/uv/install.sh | sh
 
     if [ $extras == true ]; then
@@ -132,12 +133,18 @@ fi
 
 if ! command -v node >/dev/null 2>&1; then
     echo "Installing Node.js..."
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+    curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
     apt install -y nodejs
 fi
 
-# Install Claude Code - will go to /usr/bin/claude-code
-if ! command -v claude-code >/dev/null 2>&1; then
+# Install Claude Code (binary is named `claude`)
+if ! command -v claude >/dev/null 2>&1; then
     echo "Installing Claude Code..."
     npm install -g @anthropic-ai/claude-code
+fi
+
+# Install Codex CLI
+if ! command -v codex >/dev/null 2>&1; then
+    echo "Installing Codex..."
+    npm install -g @openai/codex
 fi
